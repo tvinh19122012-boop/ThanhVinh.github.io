@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIKEMOD - Gaming Mods & Python Tools</title>
+<meta name="description" content="SIKEMOD - Chia sẻ game mod & Python tools trực tuyến">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+<!-- Pyodide cho Python Runner -->
+<script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0e1a;--card:#111827;--card2:#1a2332;
+  --blue:#00D4FF;--purple:#8B5CF6;--pink:#EC4899;
+  --txt:#e2e8f0;--txt2:#94a3b8;
+  --glow:0 0 10px rgba(0,212,255,.5),0 0 30px rgba(0,212,255,.2);
+  --grad:linear-gradient(135deg,#00D4FF,#8B5CF6);
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;line-height:1.6;
+  background-image:radial-gradient(ellipse at 20% 50%,rgba(0,212,255,.04) 0%,transparent 50%),radial-gradient(ellipse at 80% 50%,rgba(139,92,246,.04) 0%,transparent 50%)}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--blue);border-radius:3px}
+
+/* HEADER */
+.header{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(10,14,26,.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,212,255,.3);padding:0 20px;height:62px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 20px rgba(0,212,255,.1)}
+.logo{display:flex;align-items:center;gap:8px;font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:3px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 10px rgba(0,212,255,.3))}
+.logo span{font-size:26px;-webkit-text-fill-color:initial;color:var(--blue);filter:drop-shadow(0 0 6px rgba(0,212,255,.6))}
+.nav-links{display:flex;gap:4px}
+.nav-link{color:var(--txt2);padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .3s;position:relative}
+.nav-link:hover,.nav-link.active{color:var(--blue);background:rgba(0,212,255,.08)}
+.nav-link.active::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:60%;height:2px;background:var(--blue);box-shadow:var(--glow);border-radius:2px}
+.hamburger-btn{width:40px;height:40px;border:2px solid transparent;background:transparent;color:var(--blue);font-size:22px;cursor:pointer;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all .3s;position:relative}
+.hamburger-btn:hover{border-color:var(--blue);box-shadow:var(--glow);background:rgba(0,212,255,.08)}
+.hamburger-btn .dot{position:absolute;top:-2px;right:-2px;width:10px;height:10px;background:var(--pink);border-radius:50%;border:2px solid var(--bg);display:none}
+.hamburger-btn .dot.show{display:block}
+.dropdown{position:absolute;top:52px;right:0;background:var(--card);border:1px solid rgba(0,212,255,.3);border-radius:12px;padding:16px;min-width:270px;box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 40px rgba(0,212,255,.1);display:none;z-index:1001}
+.dropdown.show{display:block}
+.dropdown h3{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--blue);margin-bottom:12px;font-weight:600;text-align:center}
+.secret-group{display:flex;gap:8px}
+.secret-group input{flex:1;padding:10px 12px;border:1px solid rgba(0,212,255,.3);border-radius:8px;background:rgba(0,0,0,.3);color:var(--txt);font-size:14px;outline:none;transition:all .3s}
+.secret-group input:focus{border-color:var(--blue);box-shadow:var(--glow)}
+.secret-group button{padding:10px 16px;border:1px solid rgba(0,212,255,.3);border-radius:8px;background:transparent;color:var(--blue);font-size:13px;font-weight:600;cursor:pointer;transition:all .3s}
+.secret-group button:hover{background:var(--blue);color:var(--bg);box-shadow:var(--glow)}
+.msg{font-size:12px;margin-top:8px;display:none}
+.msg.err{color:#ef4444;display:block}.msg.ok{color:#22c55e;display:block}
+
+/* MAIN */
+.main{padding-top:76px;max-width:1200px;margin:0 auto;padding-left:20px;padding-right:20px;padding-bottom:60px}
+.tabs{display:flex;gap:4px;background:rgba(0,0,0,.3);border:1px solid rgba(0,212,255,.3);border-radius:12px;padding:4px;margin:0 auto 28px;max-width:420px}
+.tab{flex:1;padding:10px 14px;border:none;background:transparent;color:var(--txt2);font-size:13px;font-weight:600;cursor:pointer;border-radius:8px;transition:all .3s;text-align:center}
+.tab:hover{color:var(--blue);background:rgba(0,212,255,.05)}
+.tab.active{color:var(--bg);background:var(--blue);box-shadow:var(--glow)}
+.section{display:none;animation:fade .4s ease}
+.section.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.hero{text-align:center;padding:30px 16px;max-width:680px;margin:0 auto 30px}
+.hero h1{font-size:32px;font-weight:900;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px;text-transform:uppercase;letter-spacing:2px}
+.hero p{color:var(--txt2);font-size:15px}
+
+/* POSTS GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px;padding:8px 0}
+.post{background:var(--card);border:1px solid rgba(0,212,255,.3);border-radius:16px;overflow:hidden;transition:all .3s;cursor:pointer}
+.post:hover{border-color:var(--blue);box-shadow:var(--glow);transform:translateY(-4px);background:var(--card2)}
+.post img{width:100%;height:170px;object-fit:cover;border-bottom:1px solid rgba(0,212,255,.15)}
+.post .ph{width:100%;height:170px;background:linear-gradient(135deg,rgba(0,212,255,.05),rgba(139,92,246,.05));display:flex;align-items:center;justify-content:center;font-size:44px;color:rgba(0,212,255,.2);border-bottom:1px solid rgba(0,212,255,.15)}
+.post .bd{padding:14px}
+.post h3{font-size:15px;font-weight:700;margin-bottom:6px;line-height:1.4}
+.post p{font-size:12px;color:var(--txt2);margin-bottom:12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.post a{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:1px solid rgba(0,212,255,.3);border-radius:8px;background:transparent;color:var(--blue);font-size:12px;font-weight:600;text-decoration:none;transition:all .3s;cursor:pointer}
+.post a:hover{background:var(--blue);color:var(--bg);box-shadow:var(--glow)}
+.empty{text-align:center;padding:50px 20px;color:var(--txt2);grid-column:1/-1}
+.empty .ic{font-size:44px;margin-bottom:10px;opacity:.3}
+
+/* PYTHON RUNNER SECTION */
+.py-container{background:var(--card);border:1px solid rgba(0,212,255,.3);border-radius:16px;padding:20px;max-width:800px;margin:0 auto}
+.py-container h2{font-size:16px;color:var(--blue);margin-bottom:10px;text-transform:uppercase}
+.py-editor{width:100%;min-height:160px;background:rgba(0,0,0,.4);border:1px solid rgba(0,212,255,.2);border-radius:8px;color:#fff;font-family:monospace;padding:12px;font-size:13px;resize:vertical;outline:none;margin-bottom:12px}
+.py-console{width:100%;min-height:120px;background:#05070c;border:1px solid rgba(139,92,246,.3);border-radius:8px;color:#22c55e;font-family:monospace;padding:12px;font-size:12px;white-space:pre-wrap;margin-top:12px;overflow-y:auto}
+
+/* MODAL CHI TIẾT BÀI ĐĂNG */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:3000;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.show{display:flex}
+.modal-box{background:var(--card);border:1px solid rgba(0,212,255,.4);border-radius:18px;width:100%;max-width:600px;max-height:85vh;overflow-y:auto;padding:24px;position:relative;animation:fade .3s}
+.modal-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border:1px solid rgba(0,212,255,.3);border-radius:50%;background:transparent;color:var(--txt);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:#ef4444;border-color:#ef4444}
+.modal-img{width:100%;max-height:260px;object-fit:cover;border-radius:12px;margin-bottom:16px;border:1px solid rgba(0,212,255,.2)}
+.modal-title{font-size:20px;font-weight:800;color:var(--blue);margin-bottom:12px}
+.modal-desc{font-size:14px;color:var(--txt2);line-height:1.6;margin-bottom:20px;word-break:break-word}
+.modal-desc a{color:var(--blue);text-decoration:underline}
+
+/* ADMIN MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);z-index:2000;display:none;align-items:center;justify-content:center;padding:16px}
+.overlay.show{display:flex}
+.panel{background:var(--card);border:1px solid rgba(0,212,255,.3);border-radius:18px;width:100%;max-width:880px;max-height:88vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 60px rgba(0,212,255,.1);padding:24px;animation:fade .3s}
+.panel h2{font-size:18px;font-weight:800;text-transform:uppercase;letter-spacing:2px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.panel h2 button{width:34px;height:34px;border:1px solid rgba(0,212,255,.3);border-radius:8px;background:transparent;color:var(--txt2);font-size:17px;cursor:pointer}
+.panel h2 button:hover{border-color:#ef4444;color:#ef4444}
+.atabs{display:flex;gap:4px;background:rgba(0,0,0,.2);border-radius:10px;padding:4px;margin-bottom:20px;flex-wrap:wrap}
+.atab{flex:1;padding:9px 10px;border:none;background:transparent;color:var(--txt2);font-size:12px;font-weight:600;cursor:pointer;border-radius:8px;transition:all .3s;text-align:center;min-width:110px}
+.atab:hover{color:var(--blue)}
+.atab.active{color:var(--bg);background:var(--blue);box-shadow:var(--glow)}
+.apanel{display:none}
+.apanel.active{display:block}
+.form{display:flex;flex-direction:column;gap:12px;margin-bottom:20px;padding:18px;background:rgba(0,0,0,.15);border-radius:12px;border:1px solid rgba(0,212,255,.1)}
+.form h3{font-size:13px;color:var(--blue);text-transform:uppercase;letter-spacing:1px}
+.frow{display:flex;flex-direction:column;gap:5px}
+.frow label{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
+.frow input,.frow textarea,.frow select{padding:10px 12px;border:1px solid rgba(0,212,255,.3);border-radius:8px;background:rgba(0,0,0,.3);color:var(--txt);font-size:13px;outline:none;transition:all .3s}
+.frow input:focus,.frow textarea:focus,.frow select:focus{border-color:var(--blue);box-shadow:var(--glow)}
+.frow textarea{min-height:70px;resize:vertical}
+.facts{display:flex;gap:8px}
+.facts button{padding:10px 18px;border:1px solid rgba(0,212,255,.3);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .3s}
+.b1{background:transparent;color:var(--blue)}
+.b1:hover{background:var(--blue);color:var(--bg);box-shadow:var(--glow)}
+.b2{border-color:rgba(148,163,184,.3)!important;color:var(--txt2)!important;background:transparent!important}
+.b2:hover{background:rgba(148,163,184,.1)!important}
+.b3{border-color:rgba(239,68,68,.4)!important;color:#ef4444!important;background:transparent!important}
+.b3:hover{background:#ef4444!important;color:#fff!important}
+.alist{display:flex;flex-direction:column;gap:8px}
+.aitem{display:flex;align-items:center;gap:10px;padding:11px 14px;background:rgba(0,0,0,.1);border:1px solid rgba(0,212,255,.1);border-radius:10px}
+.aitem .ai{flex:1;min-width:0}
+.aitem .ti{font-size:13px;font-weight:600}
+.aitem .me{font-size:11px;color:var(--txt2)}
+.aitem .ac{display:flex;gap:6px;flex-shrink:0}
+.aitem .ac button{padding:5px 10px;border:1px solid rgba(0,212,255,.2);border-radius:6px;background:transparent;font-size:11px;cursor:pointer;transition:all .2s}
+.aitem .eb{color:var(--blue)}.aitem .eb:hover{background:var(--blue);color:var(--bg)}
+.aitem .db{color:#ef4444;border-color:rgba(239,68,68,.3)}.aitem .db:hover{background:#ef4444;color:#fff}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px}
+.stat{padding:18px;background:rgba(0,0,0,.15);border:1px solid rgba(0,212,255,.15);border-radius:12px;text-align:center}
+.stat .n{font-size:28px;font-weight:900;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat .l{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:1px;margin-top:3px}
+.note{background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.3);border-radius:10px;padding:12px;font-size:12px;color:var(--txt2);margin-top:12px;line-height:1.7}
+.note code{color:var(--blue);background:rgba(0,212,255,.1);padding:1px 6px;border-radius:4px;font-size:11px}
+.copybox{width:100%;min-height:120px;background:rgba(0,0,0,.4);border:1px solid rgba(0,212,255,.2);border-radius:8px;color:var(--txt);font-size:11px;padding:10px;font-family:monospace;resize:vertical;margin-top:8px}
+@media(max-width:700px){.logo{font-size:17px;letter-spacing:1px}.hero h1{font-size:22px}.grid{grid-template-columns:1fr}.panel{padding:16px}.nav-link{font-size:11px;padding:6px 9px}.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="logo"><span>⚡</span>SIKEMOD</div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <nav class="nav-links">
+      <span class="nav-link active" data-s="main">📦 File</span>
+      <span class="nav-link" data-s="python">🐍 Python Tools</span>
+    </nav>
+    <div style="position:relative">
+      <button class="hamburger-btn" id="hb">☰<span class="dot" id="dot"></span></button>
+      <div class="dropdown" id="dd">
+        <h3>🔐 ADMIN PANEL</h3>
+        <div class="secret-group">
+          <input type="password" id="sc" placeholder="Nhập mã bí mật..." autocomplete="off">
+          <button id="scb">🔓</button>
+        </div>
+        <div class="msg" id="scmsg"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== MAIN ===== -->
+<main class="main">
+  <div class="tabs">
+    <button class="tab active" data-s="main">📦 SHARE FILE</button>
+    <button class="tab" data-s="python">🐍 PYTHON TOOLS</button>
+  </div>
+
+  <!-- SHARE FILE -->
+  <div class="section active" id="sec-main">
+    <div class="hero">
+      <h1>📦 Kho Game & Mod</h1>
+      <p>Chia sẻ file, mod game, tool miễn phí. Bấm vào bài đăng để xem chi tiết!</p>
+    </div>
+    <div class="grid" id="posts"></div>
+  </div>
+
+  <!-- PYTHON RUNNER -->
+  <div class="section" id="sec-python">
+    <div class="hero">
+      <h1>🐍 Chạy Tool Python Trực Tuyến</h1>
+      <p>Tải hoặc dán mã nguồn Python của bạn vào đây để chạy trực tiếp trên web ngay lập tức.</p>
+    </div>
+    <div class="py-container">
+      <h2>📁 Tải tệp Python (.py) lên hoặc viết code:</h2>
+      <input type="file" id="pyFileUp" accept=".py" style="margin-bottom:12px;font-size:12px;color:var(--txt2)">
+      <textarea id="pyCode" class="py-editor" placeholder="# Viết code python hoặc tải file lên ở trên...
+print('Hello từ SIKEMOD Python!')"></textarea>
+      <div style="display:flex;gap:10px">
+        <button class="facts b1" id="runPyBtn" style="padding:10px 20px;border-radius:8px">▶ Chạy Code Python</button>
+        <button class="facts b2" id="clearPyBtn" style="padding:10px 20px;border-radius:8px">🗑 Xóa sạch</button>
+      </div>
+      <div class="py-console" id="pyConsole">⏳ Trạng thái: Đang khởi tạo môi trường Python...</div>
+    </div>
+  </div>
+</main>
+
+<!-- ===== MODAL CHI TIẾT BÀI ĐĂNG ===== -->
+<div class="modal-overlay" id="postModal">
+  <div class="modal-box">
+    <button class="modal-close" id="closeModal">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<!-- ===== ADMIN MODAL ===== -->
+<div class="overlay" id="overlay">
+  <div class="panel">
+    <h2>⚙ ADMIN PANEL <button id="acb">✕</button></h2>
+    <div class="atabs">
+      <button class="atab active" data-a="stats">📊 Thống kê</button>
+      <button class="atab" data-a="posts">📝 Bài viết</button>
+      <button class="atab" data-a="export">📤 Export</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="apanel active" id="a-stats">
+      <div class="stats" id="stats"></div>
+      <div class="note">
+        🔑 Mã bí mật hiện tại: <code>SIKEMOD2026@</code><br>
+        📌 Để đổi mã: sửa dòng <code>const SECRET = "SIKEMOD2026@"</code> trong file index.html
+      </div>
+    </div>
+
+    <!-- Posts -->
+    <div class="apanel" id="a-posts">
+      <div class="form" id="pform">
+        <h3 id="pft">📝 THÊM BÀI VIẾT MỚI</h3>
+        <div class="frow"><label>Tiêu đề *</label><input id="pt" placeholder="VD: Tool VIP 2026"></div>
+        <div class="frow"><label>Link tải (Hỗ trợ chuyển hướng tự động) *</label><input id="pl" placeholder="https://example.com/download"></div>
+        <div class="frow"><label>Mô tả chi tiết (Có thể dán link trực tiếp vào đây)</label><textarea id="pd" placeholder="Mô tả nội dung bài viết..."></textarea></div>
+        <div class="frow">
+          <label>Tải ảnh trực tiếp từ máy / điện thoại</label>
+          <input type="file" id="imgFileUp" accept="image/*" style="font-size:12px;padding:6px">
+          <input type="hidden" id="pi">
+        </div>
+        <div class="facts">
+          <button class="b1" id="psb">💾 Lưu bài viết</button>
+          <button class="b2" id="pce" style="display:none">✖ Hủy</button>
+        </div>
+      </div>
+      <h3 style="font-size:13px;color:var(--blue);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">📋 Danh sách bài viết</h3>
+      <div class="alist" id="alist"></div>
+    </div>
+
+    <!-- Export -->
+    <div class="apanel" id="a-export">
+      <div class="note">
+        <strong>📤 LÀM CHO DỮ LIỆU CỐ ĐỊNH VỚI TẤT CẢ MỌI NGƯỜI:</strong><br>
+        1. Copy đoạn code bên dưới<br>
+        2. Mở file <code>index.html</code> trên máy/điện thoại bạn<br>
+        3. Thay thế mảng dữ liệu tương ứng<br>
+        4. Lưu file → Commit & push lên GitHub → Xong! 🎉
+      </div>
+      <textarea class="copybox" id="exportBox" readonly onclick="this.select()"></textarea>
+    </div>
+  </div>
+</div>
+<script>
+/* ============================================================
+   SIKEMOD - Static Website (GitHub Pages ready)
+   ============================================================ */
+
+let posts = loadData("sikemod_posts_v4", []);
+const SECRET = "SIKEMOD2026@";
+
+/* Khởi tạo Pyodide chạy Python */
+let pyodideReady = false;
+let pyodideInstance = null;
+
+async function initPython() {
+  const consoleBox = document.getElementById("pyConsole");
+  try {
+    consoleBox.textContent = "⏳ Đang tải môi trường Python...";
+    pyodideInstance = await loadPyodide();
+    pyodideReady = true;
+    consoleBox.textContent = "✅ Python đã sẵn sàng! Bạn có thể chạy code.";
+  } catch (err) {
+    consoleBox.textContent = "❌ Lỗi khởi tạo Python: " + err.message;
+  }
+}
+initPython();
+
+document.getElementById("pyFileUp").addEventListener("change", function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    document.getElementById("pyCode").value = evt.target.result;
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById("runPyBtn").onclick = async function() {
+  const consoleBox = document.getElementById("pyConsole");
+  const code = document.getElementById("pyCode").value;
+  if (!pyodideReady) {
+    alert("Python chưa sẵn sàng, vui lòng đợi giây lát...");
+    return;
+  }
+  consoleBox.textContent = "▶ Đang chạy code...\n";
+  let output = "";
+  pyodideInstance.setStdout({ batched: (msg) => { output += msg + "\n"; consoleBox.textContent = output; } });
+  try {
+    await pyodideInstance.runPythonAsync(code);
+    if (!output) consoleBox.textContent = "✅ Hoàn tất (Không có output trả về).";
+  } catch (err) {
+    consoleBox.textContent = output + "\n❌ Lỗi thực thi:\n" + err.message;
+  }
+};
+
+document.getElementById("clearPyBtn").onclick = () => {
+  document.getElementById("pyCode").value = "";
+  document.getElementById("pyConsole").textContent = "✨ Đã làm trống.";
+};
+
+/* Xử lý chuyển đổi link thành dạng bấm được trong mô tả */
+function linkify(text) {
+  if (!text) return "";
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  return text.replace(urlRegex, function(url) {
+    return `<a href="${url}" target="_blank" rel="noopener">${url}</a>`;
+  });
+}
+
+/* ============================================================
+   STORAGE & RENDERING
+   ============================================================ */
+function loadData(key, fallback) {
+  try {
+    const saved = localStorage.getItem(key);
+    if (saved !== null) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (e) {}
+  return fallback;
+}
+
+function saveData() {
+  localStorage.setItem("sikemod_posts_v4", JSON.stringify(posts));
+}
+
+function esc(s) {
+  if (!s) return "";
+  const d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function renderPosts() {
+  const g = document.getElementById("posts");
+  if (!posts.length) {
+    g.innerHTML = '<div class="empty"><div class="ic">📦</div><p>Chưa có bài viết nào. Hãy vào Admin Panel để thêm bài viết mới!</p></div>';
+    return;
+  }
+  g.innerHTML = posts.map((p, index) => `
+    <div class="post" onclick="openPostModal(${index})">
+      ${p.img ? `<img src="${p.img}" alt="${esc(p.title)}" loading="lazy">` : '<div class="ph">🎮</div>'}
+      <div class="bd">
+        <h3>${esc(p.title)}</h3>
+        ${p.desc ? `<p>${esc(p.desc)}</p>` : ""}
+        <a href="${esc(p.link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">⬇ Tải Ngay</a>
+      </div>
+    </div>`).join("");
+}
+
+/* Modal Chi Tiết Bài Đăng */
+function openPostModal(index) {
+  const p = posts[index];
+  if (!p) return;
+  const content = document.getElementById("modalContent");
+  content.innerHTML = `
+    ${p.img ? `<img src="${p.img}" class="modal-img" alt="${esc(p.title)}">` : ''}
+    <div class="modal-title">${esc(p.title)}</div>
+    <div class="modal-desc">${linkify(esc(p.desc || "Không có mô tả chi tiết."))}</div>
+    <a href="${esc(p.link)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:12px 24px;background:var(--blue);color:var(--bg);font-weight:700;border-radius:8px;text-decoration:none">⬇ Đi đến Link Tải / Chuyển Hướng</a>
+  `;
+  document.getElementById("postModal").classList.add("show");
+  document.body.style.overflow = "hidden";
+}
+
+document.getElementById("closeModal").onclick = () => {
+  document.getElementById("postModal").classList.remove("show");
+  document.body.style.overflow = "";
+};
+document.getElementById("postModal").onclick = (e) => {
+  if (e.target === document.getElementById("postModal")) {
+    document.getElementById("postModal").classList.remove("show");
+    document.body.style.overflow = "";
+  }
+};
+
+/* ============================================================
+   ADMIN CONTROLS
+   ============================================================ */
+let isAdmin = false;
+let editPostId = null;
+
+const $ = s => document.querySelector(s);
+
+function checkAdmin() {
+  if (sessionStorage.getItem("sikemod_admin") === "1") {
+    isAdmin = true;
+    $("#dot").classList.add("show");
+  }
+}
+
+$("#hb").onclick = e => { e.stopPropagation(); $("#dd").classList.toggle("show"); };
+document.onclick = () => $("#dd").classList.remove("show");
+$("#dd").onclick = e => e.stopPropagation();
+
+$("#scb").onclick = doLogin;
+$("#sc").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+
+function doLogin() {
+  const v = $("#sc").value.trim();
+  if (!v) return;
+  if (v === SECRET) {
+    isAdmin = true;
+    sessionStorage.setItem("sikemod_admin", "1");
+    $("#dot").classList.add("show");
+    $("#scmsg").className = "msg ok";
+    $("#scmsg").textContent = "✅ Đăng nhập thành công!";
+    $("#dd").classList.remove("show");
+    setTimeout(openAdmin, 350);
+  } else {
+    $("#scmsg").className = "msg err";
+    $("#scmsg").textContent = "❌ Mã bí mật không đúng!";
+  }
+  $("#sc").value = "";
+}
+
+function openAdmin() {
+  $("#overlay").classList.add("show");
+  document.body.style.overflow = "hidden";
+  refreshAdmin();
+}
+function closeAdmin() {
+  $("#overlay").classList.remove("show");
+  document.body.style.overflow = "";
+  editPostId = null;
+  resetPostForm();
+}
+$("#acb").onclick = closeAdmin;
+$("#overlay").onclick = e => { if (e.target === $("#overlay")) closeAdmin(); };
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeAdmin(); });
+
+document.querySelectorAll(".atab").forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll(".atab").forEach(x => x.classList.remove("active"));
+    t.classList.add("active");
+    document.querySelectorAll(".apanel").forEach(x => x.classList.remove("active"));
+    $("#a-" + t.dataset.a).classList.add("active");
+    if (t.dataset.a === "export") genExport();
+  };
+});
+
+function refreshAdmin() {
+  $("#stats").innerHTML = `
+    <div class="stat"><div class="n">${posts.length}</div><div class="l">Bài viết</div></div>
+    <div class="stat"><div class="n">${posts.filter(p=>p.img).length}</div><div class="l">Có ảnh</div></div>
+  `;
+  const al = $("#alist");
+  al.innerHTML = !posts.length ? '<div style="text-align:center;padding:16px;color:var(--txt2)">Chưa có bài viết.</div>' :
+    posts.map((p, i) => `
+      <div class="aitem">
+        <div class="ai"><div class="ti">${esc(p.title)}</div><div class="me">${p.desc ? esc(p.desc.slice(0,50)) + "..." : "Không mô tả"}</div></div>
+        <div class="ac">
+          <button class="eb" onclick="editPost(${i})">✏ Sửa</button>
+          <button class="db" onclick="delPost(${i})">🗑 Xóa</button>
+        </div>
+      </div>`).join("");
+}
+
+/* Xử lý upload file ảnh trực tiếp */
+document.getElementById("imgFileUp").addEventListener("change", function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    document.getElementById("pi").value = evt.target.result; // Lưu dạng chuỗi Base64
+    alert("Đã tải ảnh lên thành công!");
+  };
+  reader.readAsDataURL(file);
+});
+
+$("#psb").onclick = savePost;
+$("#pce").onclick = () => { editPostId = null; resetPostForm(); };
+
+function savePost() {
+  const title = $("#pt").value.trim();
+  const link = $("#pl").value.trim();
+  if (!title || !link) { alert("Tiêu đề và link là bắt buộc!"); return; }
+  const obj = { title, link, desc: $("#pd").value.trim(), img: $("#pi").value.trim() };
+  if (editPostId !== null) posts[editPostId] = obj; else posts.unshift(obj);
+  saveData();
+  renderPosts();
+  resetPostForm();
+  refreshAdmin();
+}
+
+function editPost(i) {
+  editPostId = i;
+  $("#pt").value = posts[i].title;
+  $("#pl").value = posts[i].link;
+  $("#pd").value = posts[i].desc || "";
+  $("#pi").value = posts[i].img || "";
+  $("#pft").textContent = "✏ SỬA BÀI VIẾT";
+  $("#pce").style.display = "inline-block";
+  document.querySelector('[data-a="posts"]').click();
+}
+function delPost(i) {
+  if (!confirm("Xóa bài viết này?")) return;
+  posts.splice(i, 1);
+  saveData();
+  renderPosts();
+  refreshAdmin();
+}
+function resetPostForm() {
+  $("#pt").value = ""; $("#pl").value = ""; $("#pd").value = ""; $("#pi").value = "";
+  $("#imgFileUp").value = "";
+  $("#pft").textContent = "📝 THÊM BÀI VIẾT MỚI";
+  $("#pce").style.display = "none";
+}
+
+function genExport() {
+  $("#exportBox").value = "const POSTS_DATA = " + JSON.stringify(posts, null, 2) + ";";
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function switchSection(s) {
+  document.querySelectorAll(".nav-link, .tab").forEach(x => {
+    x.classList.toggle("active", x.dataset.s === s);
+  });
+  document.querySelectorAll(".section").forEach(x => {
+    x.classList.toggle("active", x.id === "sec-" + s);
+  });
+}
+document.querySelectorAll(".nav-link, .tab").forEach(x => {
+  x.onclick = () => switchSection(x.dataset.s);
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderPosts();
+checkAdmin();
+</script>
+</body>
+</html>
