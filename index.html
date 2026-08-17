@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SIKEMOD - Gaming Mods & Python Tools</title>
-<meta name="description" content="SIKEMOD - Chia sẻ game mod & Python tools trực tuyến">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+<title>SIKEMOD - Gaming Mods, Python Tools & Chat</title>
+<meta name="description" content="SIKEMOD - Chia sẻ game mod, python tools và trò chuyện trực tuyến">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💬</text></svg>">
 <!-- Pyodide cho Python Runner -->
 <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
 <style>
@@ -46,8 +46,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 /* MAIN */
 .main{padding-top:76px;max-width:1200px;margin:0 auto;padding-left:20px;padding-right:20px;padding-bottom:60px}
-.tabs{display:flex;gap:4px;background:rgba(0,0,0,.3);border:1px solid rgba(0,212,255,.3);border-radius:12px;padding:4px;margin:0 auto 28px;max-width:420px}
-.tab{flex:1;padding:10px 14px;border:none;background:transparent;color:var(--txt2);font-size:13px;font-weight:600;cursor:pointer;border-radius:8px;transition:all .3s;text-align:center}
+.tabs{display:flex;gap:4px;background:rgba(0,0,0,.3);border:1px solid rgba(0,212,255,.3);border-radius:12px;padding:4px;margin:0 auto 28px;max-width:540px}
+.tab{flex:1;padding:10px 12px;border:none;background:transparent;color:var(--txt2);font-size:12px;font-weight:600;cursor:pointer;border-radius:8px;transition:all .3s;text-align:center}
 .tab:hover{color:var(--blue);background:rgba(0,212,255,.05)}
 .tab.active{color:var(--bg);background:var(--blue);box-shadow:var(--glow)}
 .section{display:none;animation:fade .4s ease}
@@ -70,6 +70,18 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .post a:hover{background:var(--blue);color:var(--bg);box-shadow:var(--glow)}
 .empty{text-align:center;padding:50px 20px;color:var(--txt2);grid-column:1/-1}
 .empty .ic{font-size:44px;margin-bottom:10px;opacity:.3}
+
+/* CHAT SECTION */
+.chat-container{background:var(--card);border:1px solid rgba(0,212,255,.3);border-radius:16px;max-width:800px;margin:0 auto;display:flex;flex-direction:column;height:520px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.chat-messages{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;background:rgba(0,0,0,.2)}
+.chat-msg{max-width:80%;padding:12px 16px;border-radius:12px;font-size:13px;line-height:1.5;word-break:break-word}
+.chat-msg.user{background:var(--blue);color:var(--bg);align-self:flex-end;border-bottom-right-radius:2px;font-weight:500}
+.chat-msg.bot{background:var(--card2);color:var(--txt);align-self:flex-start;border-bottom-left-radius:2px;border:1px solid rgba(0,212,255,.2)}
+.chat-input-area{display:flex;padding:12px;background:var(--card);border-top:1px solid rgba(0,212,255,.2);gap:10px}
+.chat-input{flex:1;padding:10px 14px;border:1px solid rgba(0,212,255,.3);border-radius:8px;background:rgba(0,0,0,.3);color:var(--txt);font-size:13px;outline:none;transition:all .3s}
+.chat-input:focus{border-color:var(--blue);box-shadow:var(--glow)}
+.chat-send-btn{padding:10px 20px;border:1px solid rgba(0,212,255,.3);border-radius:8px;background:var(--blue);color:var(--bg);font-size:13px;font-weight:700;cursor:pointer;transition:all .3s}
+.chat-send-btn:hover{box-shadow:var(--glow);opacity:.9}
 
 /* PYTHON RUNNER SECTION */
 .py-container{background:var(--card);border:1px solid rgba(0,212,255,.3);border-radius:16px;padding:20px;max-width:800px;margin:0 auto}
@@ -142,7 +154,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   <div style="display:flex;align-items:center;gap:8px">
     <nav class="nav-links">
       <span class="nav-link active" data-s="main">📦 File</span>
-      <span class="nav-link" data-s="python">🐍 Python Tools</span>
+      <span class="nav-link" data-s="chat">💬 Chat</span>
+      <span class="nav-link" data-s="python">🐍 Python</span>
     </nav>
     <div style="position:relative">
       <button class="hamburger-btn" id="hb">☰<span class="dot" id="dot"></span></button>
@@ -162,6 +175,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <main class="main">
   <div class="tabs">
     <button class="tab active" data-s="main">📦 SHARE FILE</button>
+    <button class="tab" data-s="chat">💬 TRÒ CHUYỆN</button>
     <button class="tab" data-s="python">🐍 PYTHON TOOLS</button>
   </div>
 
@@ -172,6 +186,23 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <p>Chia sẻ file, mod game, tool miễn phí. Bấm vào bài đăng để xem chi tiết!</p>
     </div>
     <div class="grid" id="posts"></div>
+  </div>
+
+  <!-- CHAT SECTION -->
+  <div class="section" id="sec-chat">
+    <div class="hero">
+      <h1>💬 Trò Chuyện Trực Tuyến</h1>
+      <p>Nhập tin nhắn để giao lưu cùng mọi người hoặc hỏi đáp trực tiếp tại đây.</p>
+    </div>
+    <div class="chat-container">
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-msg bot">👋 Chào mừng bạn đến với khung chat SIKEMOD! Hãy gửi tin nhắn chào hỏi nào.</div>
+      </div>
+      <div class="chat-input-area">
+        <input type="text" class="chat-input" id="chatInput" placeholder="Nhập tin nhắn..." autocomplete="off">
+        <button class="chat-send-btn" id="chatSendBtn">Gửi</button>
+      </div>
+    </div>
   </div>
 
   <!-- PYTHON RUNNER -->
@@ -255,6 +286,7 @@ print('Hello từ SIKEMOD Python!')"></textarea>
     </div>
   </div>
 </div>
+
 <script>
 /* ============================================================
    SIKEMOD - Static Website (GitHub Pages ready)
@@ -312,6 +344,38 @@ document.getElementById("clearPyBtn").onclick = () => {
   document.getElementById("pyCode").value = "";
   document.getElementById("pyConsole").textContent = "✨ Đã làm trống.";
 };
+
+/* Chat Logic */
+const chatMessages = document.getElementById("chatMessages");
+const chatInput = document.getElementById("chatInput");
+const chatSendBtn = document.getElementById("chatSendBtn");
+
+function sendChatMessage() {
+  const text = chatInput.value.trim();
+  if (!text) return;
+  
+  // Thêm tin nhắn người dùng
+  const userMsg = document.createElement("div");
+  userMsg.className = "chat-msg user";
+  userMsg.textContent = text;
+  chatMessages.appendChild(userMsg);
+  chatInput.value = "";
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  // Phản hồi giả lập từ trợ lý/bot
+  setTimeout(() => {
+    const botMsg = document.createElement("div");
+    botMsg.className = "chat-msg bot";
+    botMsg.textContent = "🤖 SIKEMOD Bot: Đã nhận tin nhắn của bạn: \"" + text + "\". Chúc bạn chơi game vui vẻ!";
+    chatMessages.appendChild(botMsg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }, 600);
+}
+
+chatSendBtn.onclick = sendChatMessage;
+chatInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") sendChatMessage();
+});
 
 /* Xử lý chuyển đổi link thành dạng bấm được trong mô tả */
 function linkify(text) {
